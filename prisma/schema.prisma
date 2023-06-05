@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  username     String        @unique
+  password     String        @default("admin")
+  name         String        @db.LongText
+  locationLive Country
+  locationWork Country?
+  houseType    String?
+  familySize   Int?
+  age          Int?
+  actions      Actions[]
+  consumptions Consumption[]
+}
+
+model Plans {
+  id          Int           @id @default(autoincrement())
+  name        String
+  Reduction   Int
+  PlanActions PlanActions[]
+}
+
+model Consumption {
+  id          Int      @id @default(autoincrement())
+  startDate   DateTime
+  endDate     DateTime
+  consumption Int
+  User        User?    @relation(fields: [userId], references: [id])
+  userId      Int?
+}
+
+model GridFactor {
+  id      Int     @id @default(autoincrement())
+  year    Int
+  factor  Float
+  country Country
+}
+
+enum Country {
+  fr
+  uk
+  de
+  be
+}
+
+model Actions {
+  id          Int           @id @default(autoincrement())
+  userId      Int?
+  user        User?         @relation(fields: [userId], references: [id])
+  year        Int
+  PlanActions PlanActions[]
+}
+
+model PlanActions {
+  id       Int     @id @default(autoincrement())
+  planId   Int
+  actionId Int
+  Plans    Plans   @relation(fields: [planId], references: [id])
+  Actions  Actions @relation(fields: [actionId], references: [id])
+
+  @@unique([planId, actionId])
+}
